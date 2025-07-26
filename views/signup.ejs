@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+  <div class="form-box signup-box">
+    <h2>Sign Up</h2>
+    <% if (error) { %>
+  <div class="error-message" style="color: red;"><%= error %></div>
+<% } %>
+    <form action="/signup" method="POST" id="signup-form" class="form">
+      <div class="form-group">
+        <input type="text" name="username" id="signup-username" required placeholder=" ">
+        <label for="signup-username">Username</label>
+      </div>
+      <div class="form-group">
+        <input type="email" name="email" id="signup-email" required placeholder=" ">
+        <label for="signup-email">Email</label>
+      </div>
+      <div class="form-group" style="position: relative;">
+        <input type="password" name="password" id="signup-password" required placeholder=" ">
+        <label for="signup-password">Password</label>
+        <span class="toggle-password" onclick="togglePassword('signup-password', this)">👁️</span>
+      </div>
+      <button type="submit" class="neon-btn">Sign Up</button>
+    </form>
+    <div class="link-box">
+      <a href="/">Back to Login</a>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword(fieldId, icon) {
+      const input = document.getElementById(fieldId);
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      icon.textContent = isHidden ? "🙈" : "👁️";
+    }
+  </script>
+</body>
+</html>

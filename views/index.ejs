@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+
+  
+  <div class="form-box login-box" id="loginBox">
+    <% if (success) { %>
+  <div class="success-msg" style="color: green; "><%= success %></div>
+<% } %>
+
+<% if (error) { %>
+  <div class="error-msg" style="color: red; "><%= error %></div>
+<% } %>
+    <h2>Login</h2>
+  
+
+    <form action="/login" method="POST" id="login-form" class="form">
+      <div class="form-group">
+        <input type="email" name="email" id="signup-email" required placeholder=" ">
+        <label for="signup-email">Email</label>
+      </div>
+      <div class="form-group" style="position: relative;">
+        <input type="password" name="password" id="login-password" required placeholder=" ">
+        <label for="login-password">Password</label>
+        <span class="toggle-password" onclick="togglePassword('login-password', this)">👁️</span>
+      </div>
+      <button type="submit" class="neon-btn">Login</button>
+    </form>
+    <div class="link-box">
+        <a  onclick="showForgot()">Forgot Password?</a>
+      <a href="/signup">Create Account</a>
+        
+    </div>
+  </div>
+
+   <!-- FORGOT PASSWORD FORM -->
+<div class="form-box forgot-box" id="forgotBox" style="display: none;">
+  <h2>Forgot Password</h2>
+  
+
+  <form id="forgot-form" class="form" action="/forgot-password" method="POST">
+    <div class="form-group">
+      <input type="email" name="email" required placeholder=" " >
+      <label>Email</label>
+    </div>
+    <button type="submit" class="neon-btn" >Send Reset Link</button>
+  </form>
+  <div class="link-box">
+    <a onclick="closeForgot()">Back to Login</a>
+  </div>
+</div>
+
+
+  <script>
+     function togglePassword(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    btn.textContent = isHidden ? "🙈" : "👁️";
+  }
+
+  function showForgot() {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('forgotBox').style.display = 'block';
+  }
+  function closeForgot() {
+    document.getElementById('forgotBox').style.display = 'none';
+    document.getElementById('loginBox').style.display = 'block';
+  }
+  </script>
+</body>
+</html>
