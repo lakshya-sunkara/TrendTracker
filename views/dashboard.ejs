@@ -2,106 +2,204 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard</title>
+  <title>TrendTracker Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
-
   <style>
     body {
-      background: #0f1c2f;
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
       margin: 0;
-      padding: 40px;
+      font-family: 'Poppins', sans-serif;
+      background-color: #0f0f0f;
+      color: #fff;
+      padding-top: 70px; /* offset for fixed navbar */
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  display: flex;
+  justify-content: flex-start; /* ← Adjusted */
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #141414;
+  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+}
 
-    .logout-btn {
-      padding: 10px 20px;
-      background: transparent;
-      border: 2px solid #00ffff;
-      color: #00ffff;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
+.navbar .brand {
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: #00ffff;
+  text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 20px #00ffff;
+  margin-right: 60rem; /* ← Controls space between brand & profile */
+}
 
-    .logout-btn:hover {
-      background: #00ffff;
-      color: #000;
-    }
-
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: -400px;
-      background: #00ffcc;
-      color: #000;
-      padding: 15px 25px;
-      border-radius: 8px;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 255, 204, 0.4);
-      transition: left 0.5s ease-in-out;
-      z-index: 9999;
-    }
-
-    .toast.show {
-      left: 20px;
-    }
 
     .profile {
-      display: flex;
-      align-items: center;
-      margin-top: 40px;
-      gap: 20px;
+      position: relative;
+      margin-left: 0rem;
+      cursor: pointer;
     }
 
     .profile img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
+      width: 42px;
+      height: 40px;
+      border-radius: 99%;
       border: 2px solid #00ffff;
-      box-shadow: 0 0 10px #00ffff;
+      box-shadow: 0 0 8px #00ffff, 0 0 12px #00ffff;
+      transition: transform 0.2s ease-in-out;
     }
 
-    .welcome {
-      font-size: 20px;
+    .profile img:hover {
+      transform: scale(1.05);
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 55px;
+      right: 0;
+      background: #1e1e1e;
+      border: 1px solid #00ffff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+      width: 320px;
+      display: none;
+      z-index: 1000;
+    }
+
+    .dropdown.show {
+      display: block;
+    }
+
+    .dropdown .profile-img {
+      text-align: center;
+      padding: 1rem 1rem 0.5rem;
+    }
+
+    .dropdown .profile-img img {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      border: 2px solid #00ffff;
+    }
+
+    .dropdown .info {
+      padding: 0.5rem 1rem;
+    }
+
+    .dropdown .info p {
+      margin: 5px 0;
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    .dropdown .actions {
+      text-align: center;
+      padding: 0.8rem;
+    }
+
+    .dropdown .actions a {
+      display: block;
+      padding: 0.5rem 1rem;
+      margin: 0.4rem auto;
+      background: #00ffff;
+      color: #000;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      width: 80%;
+      box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+      transition: transform 0.2s ease;
+    }
+
+    .dropdown .actions a:hover {
+      transform: scale(1.05);
+    }
+
+    /* SUCCESS MESSAGE POPUP */
+    .success-message {
+      position: absolute;
+      top: 90px;
+      left: 20px;
+      background: rgba(0, 255, 204, 0.4);
+      color: #000;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.4), 0 0 20px rgba(0, 255, 204, 0.4);
+      animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 4s forwards;
+      z-index: 999;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateX(-100%);
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
 
-  <% if (message) { %>
-    <div class="toast"><%= message %></div>
-  <% } %>
-
-  <div class="header">
-    <h1>Dashboard</h1>
-    <form action="/logout" method="GET">
-      <button type="submit" class="logout-btn">Logout</button>
-    </form>
+  <div class="navbar">
+    <div class="brand">🚀 TrendTracker</div>
+    <div class="profile" onclick="toggleDropdown()">
+      <img src="/images/default_image.png" alt="Profile">
+      <div class="dropdown" id="dropdownMenu">
+        <div class="profile-img">
+          <img src="/images/default_image.png" alt="User Image">
+        </div>
+        <div class="info">
+           <p><strong>User ID:</strong> <%= user.userId %></p>
+          <p><strong>Name:</strong><%= user.username %></p>
+          <p><strong>Email:</strong><%= user.email %></p>
+         
+        </div>
+        <div class="actions">
+          <a href="/upload-profile">Upload Image</a>
+          <a href="/logout">Logout</a>
+        </div>
+      </div>
+    </div>
   </div>
 
-    
+  <% if (message) { %>
+    <div class="success-message">
+      <%= message %>
+    </div>
+  <% } %>
 
-  <!-- Your dashboard content goes here -->
+  <div style="padding: 2rem;">
+    <h1>Welcome, <%= user.username %>!</h1>
+    <p>This is your dashboard. Explore your trends here.</p>
+  </div>
 
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const toast = document.querySelector('.toast');
-      if (toast) {
-        toast.classList.add('show');
-        setTimeout(() => {
-          toast.classList.remove('show');
-        }, 4000);
+    function toggleDropdown() {
+      document.getElementById('dropdownMenu').classList.toggle('show');
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.closest('.profile')) {
+        const dropdown = document.getElementById('dropdownMenu');
+        if (dropdown && dropdown.classList.contains('show')) {
+          dropdown.classList.remove('show');
+        }
       }
-    });
+    }
   </script>
 </body>
 </html>
