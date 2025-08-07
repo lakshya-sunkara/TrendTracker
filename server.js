@@ -21,6 +21,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.YOUTUBE_API_KEY;
+const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID;
+const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET;
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -253,6 +255,36 @@ app.post('/reset-password/:token', async (req, res) => {
   }
 });
 
+async function getRedditAccessToken() {
+  const creds = Buffer.from(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`).toString("base64");
+
+  const res = await axios.post("https://www.reddit.com/api/v1/access_token",
+    new URLSearchParams({ grant_type: "client_credentials" }),
+    {
+      headers: {
+        Authorization: `Basic ${creds}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+  return res.data.access_token;
+}
+
+async function fetchTopRedditPosts() {
+  const token = await getRedditAccessToken();
+
+  const res = await axios.get("https://oauth.reddit.com/r/worldnews/top", {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { limit: 5 }
+  });
+
+  return res.data.data.children.map(post => ({
+    title: post.data.title,
+    url: `https://reddit.com${post.data.permalink}`,
+    subreddit: post.data.subreddit,
+    thumbnail: post.data.thumbnail,
+  }));
+}
 app.get("/dashboard", async (req, res) => {
   const message = req.session.successMessage || null;
   req.session.successMessage = null;
@@ -277,13 +309,8 @@ app.get("/dashboard", async (req, res) => {
     }));
 
     // Inside your /dashboard route
-const worldNewsResponse = await axios.get("https://www.reddit.com/r/worldnews/top.json?limit=5");
-const trendingReddit = worldNewsResponse.data.data.children.map(post => ({
-  title: post.data.title,
-  url: `https://reddit.com${post.data.permalink}`,
-  subreddit: post.data.subreddit,
-  thumbnail: post.data.thumbnail.startsWith("http") ? post.data.thumbnail : null,
-}));
+    
+    const trendingReddit = await fetchTopRedditPosts();
 
 
     // Render with data
