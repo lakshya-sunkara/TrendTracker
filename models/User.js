@@ -5,7 +5,16 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: { type: String, unique: true },
   password: String,
-  profileImage: String, // Store Cloudinary URL or path
+  profileImage: {
+  type: String,
+  default: ''
+},
+firstLogin: {
+  type: Boolean,
+  default: true,
+},
+
+
   resetToken: String,              // ✅ add this
   resetTokenExpiry: Date           // ✅ and this
 });

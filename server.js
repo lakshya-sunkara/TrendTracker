@@ -1,9 +1,13 @@
+
+const dotenv = require('dotenv');
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const path = require('path');
-const dotenv = require('dotenv');
+const axios = require('axios');
+ // put in .env
+
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
@@ -16,7 +20,7 @@ const User = require('./models/User');
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+const API_KEY = process.env.YOUTUBE_API_KEY;
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -140,6 +144,8 @@ app.post('/login', async (req, res) => {
     if (!user) {
       return res.render('index', { error: 'Email not registered' ,success: null});
     }
+    
+
 
     
     const match = await bcrypt.compare(password, user.password);
@@ -149,12 +155,13 @@ app.post('/login', async (req, res) => {
 
     
     req.session.user = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      image: user.image,
-      userId: user.userId
-    };
+  id: user._id,
+  username: user.username,
+  email: user.email,
+  profileImage: user.profileImage,  // ✅ correct
+  userId: user.userId
+};
+
 
     
     req.session.successMessage = 'Login successful';
@@ -246,15 +253,91 @@ app.post('/reset-password/:token', async (req, res) => {
   }
 });
 
-
-app.get('/dashboard',checkAuth, (req, res) => {
- 
+app.get("/dashboard", async (req, res) => {
   const message = req.session.successMessage || null;
-  req.session.successMessage = null; // clear it after use
+  req.session.successMessage = null;
+  try {
+    
+    // Fetch trending YouTube videos
+    const ytResponse = await axios.get("https://www.googleapis.com/youtube/v3/videos", {
+      params: {
+        part: "snippet",
+        chart: "mostPopular",
+        maxResults: 5,
+        regionCode: "IN", // use "IN", "GB", etc. for other countries
+        key: API_KEY
+      }
+    });
 
-  res.render('dashboard', { user: req.session.user, message });
+    const trendingYouTube = ytResponse.data.items.map(video => ({
+      title: video.snippet.title,
+      channel: video.snippet.channelTitle,
+      url: `https://www.youtube.com/watch?v=${video.id}`,
+      thumbnail: video.snippet.thumbnails.medium.url
+    }));
+
+    // Inside your /dashboard route
+const worldNewsResponse = await axios.get("https://www.reddit.com/r/worldnews/top.json?limit=5");
+const trendingReddit = worldNewsResponse.data.data.children.map(post => ({
+  title: post.data.title,
+  url: `https://reddit.com${post.data.permalink}`,
+  subreddit: post.data.subreddit,
+  thumbnail: post.data.thumbnail.startsWith("http") ? post.data.thumbnail : null,
+}));
+
+
+    // Render with data
+     res.render("dashboard", {
+      user: req.session.user,
+      trendingYouTube,
+      
+      trendingReddit,
+      
+      message
+    });
+
+  } catch (error) {
+    console.error("YouTube API error:", error.response?.data || error.message);
+    res.render("dashboard", {
+      user: req.session.user,
+      
+      trendingYouTube: [],
+      trendingReddit: [],
+      
+      message
+    });
+  }
 });
 
+
+
+app.post('/upload-profile', checkAuth, upload.single('profileImage'), async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const imagePath = req.file.path;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profileImage: imagePath },
+      { new: true }
+    );
+
+    // Update session
+    req.session.user.profileImage = updatedUser.profileImage;
+
+
+    req.session.successMessage = '📸 Profile photo updated!';
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error('❌ Upload error:', err);
+    req.session.successMessage = '⚠️ Failed to upload image.';
+    res.redirect('/dashboard');
+  }
+});
+app.get('/search', checkAuth,(req, res) => {
+  
+  res.render('search'); // render search.ejs
+});
 
 
 app.get('/logout', (req, res) => {

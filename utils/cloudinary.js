@@ -1,6 +1,8 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const dotenv = require('dotenv');
 
+dotenv.config(); 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
@@ -10,13 +12,9 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'TrendTrackerUploads',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+    folder: 'TrendTracker/User_Profile',
+    allowed_formats: ['jpg', 'jpeg', 'png'],
   },
 });
 
-module.exports = {
-  cloudinary,
-  storage
-};
+module.exports = { cloudinary, storage };

@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <title>TrendTracker Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  
   <style>
     body {
       margin: 0;
@@ -39,7 +41,7 @@
 
     .profile {
       position: relative;
-      margin-left: 0rem;
+      margin-right: 0rem;
       cursor: pointer;
     }
 
@@ -140,6 +142,45 @@
   z-index: 9999;
 }
 
+.sidebar {
+  width: 200px;
+  background-color: #0f2535;
+  position: fixed;
+  top: 4%;
+  left: 0;
+  bottom: 0;
+  padding-top: 70px;
+  box-shadow: 2px 0 10px rgba(0, 255, 255, 0.1);
+  z-index: 998;
+  color: white;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  padding: 15px 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: 0.3s;
+  font-size: 16px;
+}
+
+.sidebar-menu li:hover {
+  background-color: #00ffff22;
+  color: #00ffff;
+}
+
+.sidebar-menu li i {
+  width: 20px;
+  text-align: center;
+}
+
 
 @keyframes slideInRight {
   from {
@@ -181,6 +222,51 @@
   box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
 }
 
+.neon-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: transparent;
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.3s ease;
+  position: relative;
+}
+
+.neon-btn:hover {
+  background: #00ffff;
+  color: #000;
+  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+}
+.trending-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.trending-item {
+  background: #1c2938;
+  border: 1px solid #00ffff22;
+  padding: 15px;
+  border-radius: 10px;
+  color: #fff;
+  transition: 0.2s;
+  box-shadow: 0 0 10px #00ffff11;
+}
+
+.trending-item img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.trending-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 12px #00ffff44;
+}
 
   </style>
 </head>
@@ -189,12 +275,17 @@
   <div class="navbar">
     <div class="brand">🚀 TrendTracker</div>
     <div class="profile" onclick="toggleDropdown()">
-      <img src="/images/default_image.png" alt="Profile">
+     <img src="<%= user.profileImage && user.profileImage !== '' ? user.profileImage : '/images/default_image.png' %>" alt="Profile">
+
+
       <div class="dropdown" id="dropdownMenu">
         <div class="profile-img">
-          <img src="/images/default_image.png" alt="User Image">
+          <img src="<%= user.profileImage && user.profileImage !== '' ? user.profileImage : '/images/default_image.png' %>" alt="Profile">
+
+
+
           <form action="/upload-profile" method="POST" enctype="multipart/form-data" id="uploadForm">
-    <label for="fileUpload" class="upload-link">➕Add Profile</label>
+    <label for="fileUpload" class="upload-link">➕Add Photo</label>
     <input type="file" name="profileImage" id="fileUpload" style="display: none;" onchange="document.getElementById('uploadForm').submit();" />
   </form>
         </div>
@@ -218,10 +309,84 @@
     </div>
   <% } %>
 
-  <div style="padding: 2rem;">
-    <h1>Welcome, <%= user.username %>!</h1>
-    <p>This is your dashboard. Explore your trends here.</p>
+ <div class="sidebar">
+  <ul class="sidebar-menu">
+    <li><i class="fa fa-home"></i> <span>Home</span></li>
+    <li><i class="fa fa-search"></i> <span>Keyword Tracker</span></li>
+    <li><i class="fa fa-chart-line"></i> <span>Volume Trends</span></li>
+    <li><i class="fa fa-smile"></i> <span>Sentiment Analysis</span></li>
+    <li><i class="fa fa-database"></i> <span>Trending Posts</span></li>
+    <li><i class="fa fa-file-export"></i> <span>Reports</span></li>
+  </ul>
+</div>
+
+
+
+  <div style="margin-left: 200px; padding: 2rem;">
+  <h1>Welcome, <%= user.username %>!</h1>
+  <p style="font-size: 18px; color: #ccc;">
+    <strong>TrendTracker</strong> is your one-stop dashboard for monitoring what’s trending across platforms like <strong>Twitter</strong> and <strong>YouTube</strong>.
+    As a registered user, you can:
+  </p>
+  <ul style="margin-top: 1rem; font-size: 16px; color: #aaa; line-height: 1.8;">
+    <li>🔍 Track keywords and hashtags in real time</li>
+    <li>📈 View trend volume charts and spikes</li>
+    <li>😊 Analyze sentiment of tweets and video comments</li>
+    <li>🎥 Explore top trending videos and viral tweets</li>
+    <li>📂 Export trend reports as PDF or CSV</li>
+    <li>📅 Filter trends by custom date ranges</li>
+  </ul>
+  <p style="margin-top: 1rem; font-size: 16px; color: #ccc;">
+    Start by choosing a feature from the sidebar — whether it’s viewing trending content, analyzing sentiment, or exporting reports.
+  </p>
+
+  <h2 style="margin: 3% 0%;">Select a Keyword to Track</h2>
+  <p>Click below to choose a keyword you're interested in. We’ll fetch and analyze trends across platforms like Twitter, YouTube, and Reddit.</p>
+
+  <a href="/search" class="neon-btn">Select Keyword</a>
+
+
+  <hr style="margin: 40px 0; border-color: #00ffff44;" />
+
+<!-- 🌐 Trending YouTube Videos -->
+<section>
+  <h2>🌐 World Trending YouTube Videos</h2>
+  <div class="trending-list">
+    <% trendingYouTube.forEach(video => { %>
+      <div class="trending-item">
+        <img src="<%= video.thumbnail %>" alt="Thumbnail" />
+        <h4><%= video.title %></h4>
+        <p><%= video.channel %></p>
+        <a href="<%= video.url %>" class="neon-btn" target="_blank">Watch</a>
+      </div>
+    <% }) %>
   </div>
+</section>
+
+<!-- 🔥 Trending Reddit Posts -->
+<section style="margin-top: 40px;">
+  <h2>🔥 Trending Reddit Posts</h2>
+  <div class="trending-list">
+    <% trendingReddit.forEach(post => { %>
+      <div class="trending-item">
+        <h4><%= post.title %></h4>
+        <p>Subreddit: <%= post.subreddit %></p>
+        <a href="<%= post.url %>" target="_blank" class="neon-btn">Read More</a>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<!-- 🐦 Trending Tweets -->
+
+
+
+
+
+
+
+</div>
+
 
   <script>
     function toggleDropdown() {
