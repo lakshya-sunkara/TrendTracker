@@ -2,19 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TrendTracker Dashboard</title>
+  <title>Search Keyword</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  
   <style>
     body {
-      margin: 0;
+      background: #0f0f0f;
       font-family: 'Poppins', sans-serif;
-      background-color: #0f0f0f;
       color: #fff;
+      
+      
+     
+      margin: 0;
       padding-top: 70px; 
     }
+  
 
     .navbar {
   position: fixed;
@@ -121,28 +123,19 @@
       transform: scale(1.05);
     }
 
-   
-.success-message {
-  position: fixed;
-  top: 90px;
-  right: 30px;
-  background: rgba(0, 255, 204, 0.10); 
-  color: #00ffe1;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 1rem;
-  font-family: 'Poppins', sans-serif;
-  text-shadow: 0 0 5px #00ffe1, 0 0 10px #00ffe1, 0 0 20px #00ffe1;
-  box-shadow:
-    0 0 10px rgba(0, 255, 204, 0.3),
-    0 0 20px rgba(0, 255, 204, 0.5),
-    0 0 30px rgba(0, 255, 204, 0.7),
-    0 0 40px rgba(0, 255, 204, 0.8);
-  animation: slideInRight 0.5s ease-out, fadeOutRight 0.5s ease-in 4s forwards;
-  z-index: 9999;
-}
-/* Sidebar container */
+    .search-box {
+      background: #1c2938;
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 15px #00ffff55;
+    }
+
+    .search-box h2 {
+      margin-bottom: 20px;
+      color: #00ffff;
+    }
+
 .sidebar {
   width: 200px;
   height: 100vh;
@@ -203,98 +196,70 @@
   color: #fff;
 }
 
+    .search-box input {
+      padding: 10px;
+      width: 250px;
+      border: 2px solid #00ffff;
+      border-radius: 8px;
+      outline: none;
+      margin-bottom: 15px;
+      background: transparent;
+      color: #fff;
+      font-size: 16px;
+    }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+    .neon-btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: transparent;
+      color: #00ffff;
+      border: 2px solid #00ffff;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    .neon-btn:hover {
+      background: #00ffff;
+      color: #000;
+      text-decoration: none;
+      box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    }
+    .results-section {
+  margin-top: 2rem;
 }
 
-@keyframes fadeOutRight {
-  to {
-    opacity: 0;
-    transform: translateX(100%);
-    display: none;
-  }
-}
-
-.upload-link {
-  display: inline-block;
-  margin-top: 0.6rem;
-  padding: 6px 12px;
-  background: #0f0f0f;
-  border: 1px solid #00ffff;
-  border-radius: 5px;
-  color: #00ffff;
-  font-weight: bold;
-  text-shadow: 0 0 5px #00ffff;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.upload-link:hover {
-  background: #00ffff;
-  color: #000;
-  transform: scale(1.05);
-  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-}
-
-.neon-btn {
-  display: inline-block;
-  padding: 12px 24px;
-  font-size: 16px;
-  background: transparent;
-  color: #00ffff;
-  border: 2px solid #00ffff;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: 0.3s ease;
-  position: relative;
-}
-
-.neon-btn:hover {
-  background: #00ffff;
-  color: #000;
-  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-}
-.trending-list {
+.results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
 }
 
-.trending-item {
-  background: #1c2938;
-  border: 1px solid #00ffff22;
-  padding: 15px;
+.result-card {
+  background: #111827;
+  padding: 1rem;
   border-radius: 10px;
   color: #fff;
-  transition: 0.2s;
-  box-shadow: 0 0 10px #00ffff11;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
 }
 
-.trending-item img {
+.result-card img {
   width: 100%;
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 0.5rem;
 }
 
-.trending-item:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 12px #00ffff44;
+.result-card h5 {
+  font-size: 16px;
+  margin-bottom: 0.3rem;
 }
 
   </style>
 </head>
 <body>
-
-  <div class="navbar">
+    <div class="navbar">
     <div class="brand">🚀 TrendTracker</div>
     <div class="profile" onclick="toggleDropdown()">
      <img src="<%= user.profileImage && user.profileImage !== '' ? user.profileImage : '/images/default_image.png' %>" alt="Profile">
@@ -321,15 +286,9 @@
   
   <button onclick="location.href='/logout'" class="neon-btn"> Logout</button>
 </div>
-
-      </div>
+    </div>
     </div>
   </div>
-  <% if (message) { %>
-    <div class="success-message">
-      <%= message %>
-    </div>
-  <% } %>
 
 <div class="sidebar">
   <ul class="sidebar-menu">
@@ -343,74 +302,60 @@
 </div>
 
 
+<div class="main-content">
+  <div class="search-box">
+    <h2>Search Keywords</h2>
+    <form action="/search" method="POST">
+      <input type="text" name="keyword" placeholder="Enter keyword..." required>
+      <button type="submit" class="neon-btn">Search</button>
+    </form>
+  </div>
 
-  <div style="margin-left: 200px; padding: 2rem;">
-  <h1>Welcome, <%= user.username %>!</h1>
-  <p style="font-size: 18px; color: #ccc;">
-    <strong>TrendTracker</strong> is your one-stop dashboard for monitoring what’s trending across platforms like <strong>Twitter</strong> and <strong>YouTube</strong>.
-    As a registered user, you can:
-  </p>
-  <ul style="margin-top: 1rem; font-size: 16px; color: #aaa; line-height: 1.8;">
-    <li>🔍 Track keywords and hashtags in real time</li>
-    <li>📈 View trend volume charts and spikes</li>
-    <li>😊 Analyze sentiment of tweets and video comments</li>
-    <li>🎥 Explore top trending videos and viral tweets</li>
-    <li>📂 Export trend reports as PDF or CSV</li>
-    <li>📅 Filter trends by custom date ranges</li>
-  </ul>
-  <p style="margin-top: 1rem; font-size: 16px; color: #ccc;">
-    Start by choosing a feature from the sidebar — whether it’s viewing trending content, analyzing sentiment, or exporting reports.
-  </p>
+  <% if (keyword) { %>
+    <h3>Results for "<%= keyword %>"</h3>
 
-  <h2 style="margin: 3% 0%;">Select a Keyword to Track</h2>
-  <p>Click below to choose a keyword you're interested in. We’ll fetch and analyze trends across platforms like Twitter, YouTube, and Reddit.</p>
+    <!-- YouTube Results -->
+    <div class="results-section">
+      <h4>YouTube Videos</h4>
+      <div class="results-grid">
+        <% youtubeResults.forEach(video => { %>
+          <div class="result-card">
+            <img src="<%= video.thumbnail %>" alt="Thumbnail">
+            <h5><%= video.title %></h5>
+            <p><%= video.channel %></p>
+            <a href="<%= video.url %>" target="_blank" class="neon-btn">Watch</a>
+          </div>
+        <% }) %>
+      </div>
+    </div>
 
-  <a href="/search" class="neon-btn">Select Keyword</a>
-
-
-  <hr style="margin: 40px 0; border-color: #00ffff44;" />
-
-<!-- 🌐 Trending YouTube Videos -->
-<section>
-  <h2>🌐 World Trending YouTube Videos</h2>
-  <div class="trending-list">
-    <% trendingYouTube.forEach(video => { %>
-      <div class="trending-item">
-        <img src="<%= video.thumbnail %>" alt="Thumbnail" />
-        <h4><%= video.title %></h4>
-        <p><%= video.channel %></p>
-        <a href="<%= video.url %>" class="neon-btn" target="_blank">Watch</a>
+    <!-- Reddit Results -->
+   <!-- Reddit Results -->
+<div class="results-section">
+  <h4>Reddit Posts</h4>
+  <div class="results-grid">
+    <% redditResults.forEach(post => { %>
+      <div class="result-card">
+        <% if (post.thumbnail && post.thumbnail.startsWith("http")) { %>
+          <img src="<%= post.thumbnail %>" alt="Reddit Thumbnail">
+        <% } else { %>
+          <img src="/images/reddit_default.png" alt="Reddit">
+        <% } %>
+        <h5><%= post.title %></h5>
+        <p>r/<%= post.subreddit %></p>
+        <a href="<%= post.url %>" target="_blank" class="neon-btn">View Post</a>
       </div>
     <% }) %>
   </div>
-</section>
+</div>
 
-<!-- 🔥 Trending Reddit Posts -->
-<section style="margin-top: 40px;">
-  <h2>🔥 Trending Reddit Posts</h2>
-  <div class="trending-list">
-    <% trendingReddit.forEach(post => { %>
-      <div class="trending-item">
-        <h4><%= post.title %></h4>
-        <p>Subreddit: <%= post.subreddit %></p>
-        <a href="<%= post.url %>" target="_blank" class="neon-btn">Read More</a>
-      </div>
-    <% }) %>
-  </div>
-</section>
-
-
-
-
-
-
-
-
-
+  <% } %>
 </div>
 
 
-  <script>
+  
+</body>
+<script>
     function toggleDropdown() {
       document.getElementById('dropdownMenu').classList.toggle('show');
     }
@@ -424,5 +369,4 @@
       }
     }
   </script>
-</body>
 </html>

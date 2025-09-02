@@ -285,7 +285,7 @@ async function fetchTopRedditPosts() {
     thumbnail: post.data.thumbnail,
   }));
 }
-app.get("/dashboard", async (req, res) => {
+app.get("/dashboard",checkAuth, async (req, res) => {
   const message = req.session.successMessage || null;
   req.session.successMessage = null;
   try {
@@ -361,9 +361,19 @@ app.post('/upload-profile', checkAuth, upload.single('profileImage'), async (req
     res.redirect('/dashboard');
   }
 });
-app.get('/search', checkAuth,(req, res) => {
+
+
+
+// Search Keyword page
+app.get("/search",checkAuth, (req, res) => {
   
-  res.render('search'); // render search.ejs
+  res.render("search", {
+    user: req.session.user,
+    keyword: null,
+    youtubeResults: [],
+    redditResults: []
+  });
+  
 });
 
 
@@ -372,6 +382,61 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+
+
+// Handle keyword search
+app.post("/search", async (req, res) => {
+  const { keyword } = req.body;
+
+  try {
+    // ✅ Fetch YouTube videos
+    const ytResponse = await axios.get("https://www.googleapis.com/youtube/v3/search", {
+      params: {
+        part: "snippet",
+        q: keyword,
+        maxResults: 10,
+        type: "video",
+        key: API_KEY
+      }
+    });
+
+    const youtubeResults = ytResponse.data.items.map(item => ({
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle,
+      url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      thumbnail: item.snippet.thumbnails.medium.url
+    }));
+
+    // ✅ Fetch Reddit posts (no API key needed for public)
+    const redditResponse = await axios.get(`https://www.reddit.com/search.json?q=${encodeURIComponent(keyword)}&limit=10`);
+
+    const redditResults = redditResponse.data.data.children.map(post => ({
+  title: post.data.title,
+  subreddit: post.data.subreddit,
+  url: `https://reddit.com${post.data.permalink}`,
+  thumbnail: post.data.thumbnail
+}));
+
+
+    // Render page with results
+    res.render("search", {
+      user: req.session.user,
+      keyword,
+      youtubeResults,
+      redditResults
+    });
+
+  } catch (error) {
+    console.error("Search error:", error.response?.data || error.message);
+    res.render("search", {
+      user: req.session.user,
+      keyword,
+      youtubeResults: [],
+      redditResults: [],
+      error: "Failed to fetch results. Please try again."
+    });
+  }
+});
 
 
 app.listen(PORT, () => {
