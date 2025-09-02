@@ -408,14 +408,21 @@ app.post("/search", async (req, res) => {
     }));
 
     // ✅ Fetch Reddit posts (no API key needed for public)
-    const redditResponse = await axios.get(`https://www.reddit.com/search.json?q=${encodeURIComponent(keyword)}&limit=10`);
+    const token = await getRedditAccessToken();
+    const redditResponse = await axios.get("https://oauth.reddit.com/search", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "TrendTrackerApp/1.0"
+      },
+      params: { q: keyword, limit: 10 }
+    });
 
     const redditResults = redditResponse.data.data.children.map(post => ({
-  title: post.data.title,
-  subreddit: post.data.subreddit,
-  url: `https://reddit.com${post.data.permalink}`,
-  thumbnail: post.data.thumbnail
-}));
+      title: post.data.title,
+      subreddit: post.data.subreddit,
+      url: `https://reddit.com${post.data.permalink}`,
+      thumbnail: post.data.thumbnail
+    }));
 
 
     // Render page with results
