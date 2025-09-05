@@ -16,6 +16,7 @@
     "cloudinary": "^1.41.3",
     "connect-mongodb-session": "^5.0.0",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.18",
     "dotenv": "^16.6.1",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
@@ -25,6 +26,7 @@
     "mongoose-sequence": "^6.0.1",
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10"
   }

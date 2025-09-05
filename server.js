@@ -16,6 +16,9 @@ const multer = require('multer');
 const { storage } = require('./utils/cloudinary');
 const upload = multer({ storage });
 const User = require('./models/User');
+const Keyword = require("./models/Keyword");
+const { fetchYouTubeStats } = require("./utils/youtube");
+const { default: dayjs } = require("dayjs");
 // Load environment variables
 dotenv.config();
 const app = express();
@@ -390,6 +393,17 @@ app.post("/search", async (req, res) => {
 
   try {
     // ✅ Fetch YouTube videos
+    const cleanKeyword = keyword.trim();
+
+    // ✅ Save keyword only if not already tracked by this user
+    const existing = await Keyword.findOne({ 
+      userId: req.session.user.id, 
+      keyword: cleanKeyword 
+    });
+
+    if (!existing) {
+      await Keyword.create({ userId: req.session.user.id, keyword: cleanKeyword });
+    }
     const ytResponse = await axios.get("https://www.googleapis.com/youtube/v3/search", {
       params: {
         part: "snippet",
@@ -428,7 +442,7 @@ app.post("/search", async (req, res) => {
     // Render page with results
     res.render("search", {
       user: req.session.user,
-      keyword,
+       keyword: cleanKeyword,
       youtubeResults,
       redditResults
     });
@@ -437,7 +451,7 @@ app.post("/search", async (req, res) => {
     console.error("Search error:", error.response?.data || error.message);
     res.render("search", {
       user: req.session.user,
-      keyword,
+     keyword: req.body.keyword || "",
       youtubeResults: [],
       redditResults: [],
       error: "Failed to fetch results. Please try again."
@@ -445,7 +459,63 @@ app.post("/search", async (req, res) => {
   }
 });
 
+app.get("/trends", checkAuth, async (req, res) => {
+  try {
+    // Fetch all keywords for logged-in user
+    const list = await Keyword.find({ userId: req.session.user.id }).lean();
 
+    const enriched = await Promise.all(
+      list.map(async (k) => {
+        try {
+          const stats = await fetchYouTubeStats(k.keyword, API_KEY);
+
+          // Push stats into DB trendData
+          await Keyword.updateOne(
+            { _id: k._id },
+            {
+              $push: {
+                trendData: {
+                  $each: [{ date: new Date(), ...stats }],
+                  $slice: -720 // keep last 720 points (~30 days if hourly)
+                }
+              }
+            }
+          );
+
+          return { ...k, stats };
+        } catch (err) {
+          console.error(`❌ Error fetching stats for ${k.keyword}:`, err.message);
+          return { ...k, stats: null };
+        }
+      })
+    );
+
+    // Re-fetch after update so we get full history
+    const updated = await Keyword.find({ userId: req.session.user.id }).lean();
+
+    res.render("volumeTrend", {
+      user: req.session.user,
+      keywords: updated,
+      error: null,
+      success: null
+    });
+  } catch (err) {
+    console.error("❌ Trends route error:", err.message);
+    res.render("volumeTrend", {
+      user: req.session.user,
+      keywords: [],
+      error: "Failed to load trends",
+      success: null
+    });
+  }
+});
+
+
+
+app.post("/keywords/:id/delete", checkAuth, async (req, res) => {
+  await Keyword.deleteOne({ _id: req.params.id, userId: req.session.user.id });
+  res.redirect("/keywords");
+});
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
