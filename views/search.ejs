@@ -313,6 +313,26 @@
     </form>
   </div>
 
+  <div class="saved-keywords" style="margin-top:30px;">
+    <h3>Saved Keywords</h3>
+    <% if (keywords && keywords.length > 0) { %>
+      <ul style="list-style:none; padding:0;">
+        <% keywords.forEach(k => { %>
+          <li style="margin:10px 0; display:flex; justify-content:space-between; align-items:center; background:#1c1c1c; padding:10px; border-radius:8px;">
+            <span style="font-weight:500;"><%= k.keyword %></span>
+            <form action="/keywords/<%= k._id %>/delete" method="POST" style="margin:0;">
+              <button type="submit" style="background:#ff3333; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                ❌ Delete
+              </button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p style="color:#aaa;">No keywords saved yet. Add one above 👆</p>
+    <% } %>
+  </div>
+
   <% if (keyword) { %>
     <h3>Results for "<%= keyword %>"</h3>
 

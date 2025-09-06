@@ -216,6 +216,7 @@
       border-radius: 8px;
       cursor: pointer;
       transition: 0.3s;
+      text-decoration: none;
     }
 
     .neon-btn:hover {
@@ -270,10 +271,20 @@
 
 <div class="main-content">
   <h2>Volume & Engagement Trends</h2>
-  <div id="videosChart" style="width:100%;height:500px;"></div>
-  <div id="viewsChart" style="width:100%;height:500px;margin-top:30px;"></div>
-  <div id="likesCommentsChart" style="width:100%;height:500px;margin-top:30px;"></div>
+
+  <% if (keywords.length === 0) { %>
+    <div style="margin-top:20px; padding:20px; text-align:center; border:2px dashed #00ffff; border-radius:12px; color:#00ffff;">
+      <p style="margin-bottom: 4%;"><%= message || "⚠️ No keywords available. Please add keywords from the Search page." %></p>
+      <a href="/search" class="neon-btn">Go to Search</a>
+    </div>
+  <% } else { %>
+    <div id="videosChart" style="width:100%;height:500px;"></div>
+    <div id="viewsChart" style="width:100%;height:500px;margin-top:30px;"></div>
+    <div id="likesCommentsChart" style="width:100%;height:500px;margin-top:30px;"></div>
+    <div id="mapChart" style="width:100%;height:600px;margin-top:30px;"></div>
+  <% } %>
 </div>
+
 
 
 
@@ -346,6 +357,59 @@
     });
   });
 
+const iso2ToIso3 = {
+      US: "USA", IN: "IND", GB: "GBR", CA: "CAN", AU: "AUS",
+      DE: "DEU", FR: "FRA", BR: "BRA", RU: "RUS", JP: "JPN",
+      KR: "KOR", IT: "ITA", ES: "ESP", MX: "MEX", ZA: "ZAF",
+      NG: "NGA", SA: "SAU", AE: "ARE", SG: "SGP", ID: "IDN"
+    };
+
+    // ✅ Aggregate all keyword country stats
+    let countryStats = [];
+    keywords.forEach(k => { if (k.countryStats) countryStats = countryStats.concat(k.countryStats); });
+
+    const aggregated = {};
+    countryStats.forEach(c => { aggregated[c.country] = (aggregated[c.country] || 0) + c.videoCount; });
+
+    const finalStats = Object.entries(aggregated).map(([country, videoCount]) => ({
+      country: iso2ToIso3[country] || country,
+      videoCount
+    }));
+
+    console.log("Country stats for map:", finalStats);
+
+    const mapData = [{
+  type: 'choropleth',
+  locationmode: 'ISO-3',
+  locations: finalStats.map(c => c.country),
+  z: finalStats.map(c => c.videoCount),
+  text: finalStats.map(c => `${c.country}: ${c.videoCount} videos`),
+  colorscale: [
+    [0, 'rgb(198, 219, 239)'],   // very light blue for low values
+    [0.5, 'rgb(107, 174, 214)'], // medium blue
+    [1, 'rgb(8, 48, 107)']       // dark navy blue for highest
+  ],
+  reversescale: false,
+  marker: { line: { color: 'rgb(180,180,180)', width: 0.5 } }
+}];
+
+const mapLayout = {
+  title: '🌍 Keyword Popularity by Country (Video Count)',
+  geo: {
+    showframe: false,
+    showcoastlines: false,
+    projection: { type: 'mercator' }
+  },
+  width: 1400,   // ✅ increase width
+  height: 800,   // ✅ increase height
+  paper_bgcolor: '#0f0f0f',
+  plot_bgcolor: '#0f0f0f',
+  font: { color: '#fff' }
+};
+
+P
+
+
   // Chart 1: Video Count
   Plotly.newPlot('videosChart', videoTraces, {
     title: '📊 Video Count Over Time',
@@ -375,6 +439,9 @@
     plot_bgcolor: '#0f0f0f',
     font: { color: '#fff' }
   });
+
+   Plotly.newPlot('mapChart', mapData, mapLayout);
+
 </script>
 
 
