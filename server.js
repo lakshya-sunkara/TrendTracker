@@ -480,23 +480,40 @@ app.get("/trends", checkAuth, async (req, res) => {
           const stats = await fetchYouTubeStats(k.keyword, API_KEY);
           const countryStats = await fetchCountryStats(k.keyword, API_KEY);
 
-          // Save stats into DB
+          // Save current stats into DB
           await Keyword.updateOne(
             { _id: k._id },
             {
               $push: {
                 trendData: {
                   $each: [{ date: new Date(), ...stats }],
-                  $slice: -720
+                  $slice: -720 // keep last 720 entries
                 }
               }
             }
           );
 
-          return { ...k, stats, countryStats };
+          // Re-fetch the updated keyword with trendData
+          const updated = await Keyword.findById(k._id).lean();
+
+          // ✅ Sum up all trendData counts for bar chart
+          const totalVideoCount = updated.trendData.reduce((sum, d) => sum + (d.videoCount || 0), 0);
+          const totalViews = updated.trendData.reduce((sum, d) => sum + (d.totalViews || 0), 0);
+          const totalLikes = updated.trendData.reduce((sum, d) => sum + (d.totalLikes || 0), 0);
+          const totalComments = updated.trendData.reduce((sum, d) => sum + (d.totalComments || 0), 0);
+
+          return {
+            ...updated,
+            stats,
+            countryStats,
+            totalVideoCount,
+            totalViews,
+            totalLikes,
+            totalComments
+          };
         } catch (err) {
           console.error(`❌ Error fetching stats for ${k.keyword}:`, err.message);
-          return { ...k, stats: null, countryStats: [] };
+          return { ...k, stats: null, countryStats: [], totalVideoCount: 0, totalViews: 0, totalLikes: 0, totalComments: 0 };
         }
       })
     );
@@ -517,8 +534,6 @@ app.get("/trends", checkAuth, async (req, res) => {
     });
   }
 });
-
-
 
 
 // Delete keyword by ID

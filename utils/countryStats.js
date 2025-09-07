@@ -1,40 +1,36 @@
 const axios = require("axios");
 
 async function fetchCountryStats(keyword, apiKey) {
-  // ISO 2-letter country codes (safe set – supported by YouTube API)
-  const countries = [
-    "US", "IN", "GB", "CA", "AU",
-    "DE", "FR", "BR", "RU", "JP",
-    "KR", "IT", "ES", "MX", "ZA",
-    "NG", "SA", "AE", "SG", "ID"
-  ];
-
+  const countries = ["IN", "US", "GB", "CA", "AU"];
+  const publishedAfter = new Date(Date.now() - 24*60*60*1000).toISOString();
   const results = [];
 
   for (const country of countries) {
-    try {
-      // Instead of search (which fails for some countries),
-      // we use videos.list with chart=mostPopular
-      const res = await axios.get("https://www.googleapis.com/youtube/v3/videos", {
-        params: {
-          key: apiKey,
-          part: "id",
-          chart: "mostPopular",
-          regionCode: country,
-          maxResults: 50
-        }
-      });
+    let totalCount = 0;
+    let nextPageToken = null;
 
-      results.push({
-        country,
-        videoCount: res.data.items.length
-      });
+    try {
+      do {
+        const res = await axios.get("https://www.googleapis.com/youtube/v3/search", {
+          params: {
+            key: apiKey,
+            part: "snippet",
+            type: "video",
+            q: keyword,
+            maxResults: 50,
+            publishedAfter,
+            regionCode: country,
+            pageToken: nextPageToken
+          }
+        });
+
+        totalCount += res.data.items.length;
+        nextPageToken = res.data.nextPageToken;
+      } while (nextPageToken);
+
+      results.push({ country, videoCount: totalCount });
     } catch (err) {
-      if (err.response && err.response.status === 403) {
-        console.warn(`⚠️ RegionCode ${country} not supported, skipping...`);
-      } else {
-        console.error(`❌ Error fetching for ${country}:`, err.message);
-      }
+      console.error(`Error fetching for ${country}:`, err.message);
       results.push({ country, videoCount: 0 });
     }
   }

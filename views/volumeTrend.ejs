@@ -270,18 +270,16 @@
 
 
 <div class="main-content">
-  <h2>Volume & Engagement Trends</h2>
+  <h2>📊 Volume & Engagement Trends</h2>
 
-  <% if (keywords.length === 0) { %>
-    <div style="margin-top:20px; padding:20px; text-align:center; border:2px dashed #00ffff; border-radius:12px; color:#00ffff;">
-      <p style="margin-bottom: 4%;"><%= message || "⚠️ No keywords available. Please add keywords from the Search page." %></p>
-      <a href="/search" class="neon-btn">Go to Search</a>
-    </div>
+  <% if (!keywords || keywords.length === 0) { %>
+    <p style="color:yellow;">⚠️ No keywords found. Please search and save a keyword first.</p>
   <% } else { %>
-    <div id="videosChart" style="width:100%;height:500px;"></div>
-    <div id="viewsChart" style="width:100%;height:500px;margin-top:30px;"></div>
-    <div id="likesCommentsChart" style="width:100%;height:500px;margin-top:30px;"></div>
-    <div id="mapChart" style="width:100%;height:600px;margin-top:30px;"></div>
+    <div id="videosChart" class="chart-container" style="width:100%;height:500px;"></div>
+    <div id="viewsChart" class="chart-container" style="width:100%;height:500px;"></div>
+    <div id="likesCommentsChart" class="chart-container" style="width:100%;height:500px;"></div>
+    <div id="barChart" style="width:100%;height:500px;margin-top:30px;"></div>
+    <div id="mapChart" class="chart-container" style="width:100%;height:700px;"></div>
   <% } %>
 </div>
 
@@ -306,113 +304,53 @@
 
   // Safely inject keywords data from server
   const keywords = JSON.parse('<%- JSON.stringify(keywords || []) %>');
-  console.log("Keywords from server:", keywords);
+  console.log("Keywords:", keywords);
 
-  const videoTraces = [];
-  const viewsTraces = [];
-  const likesTraces = [];
-  const commentsTraces = [];
+  const videoTraces = [], viewsTraces = [], likesTraces = [], commentsTraces = [];
 
   keywords.forEach(k => {
+    if (!k.trendData) return; // ✅ Skip empty
+
     const dates = k.trendData.map(d => new Date(d.date));
     const videoCount = k.trendData.map(d => d.videoCount);
     const views = k.trendData.map(d => d.totalViews);
     const likes = k.trendData.map(d => d.totalLikes);
     const comments = k.trendData.map(d => d.totalComments);
 
-    // Video count trend
-    videoTraces.push({
-      x: dates,
-      y: videoCount,
-      mode: 'lines+markers',
-      name: k.keyword,
-      type: 'scatter'
-    });
-
-    // Views trend
-    viewsTraces.push({
-      x: dates,
-      y: views,
-      mode: 'lines+markers',
-      name: `${k.keyword} - Views`,
-      type: 'scatter'
-    });
-
-    // Likes trend
-    likesTraces.push({
-      x: dates,
-      y: likes,
-      mode: 'lines+markers',
-      name: `${k.keyword} - Likes`,
-      type: 'scatter'
-    });
-
-    // Comments trend
-    commentsTraces.push({
-      x: dates,
-      y: comments,
-      mode: 'lines+markers',
-      name: `${k.keyword} - Comments`,
-      type: 'scatter'
-    });
+    videoTraces.push({ x: dates, y: videoCount, mode: 'lines+markers', name: k.keyword, type: 'scatter' });
+    viewsTraces.push({ x: dates, y: views, mode: 'lines+markers', name: `${k.keyword} - Views`, type: 'scatter' });
+    likesTraces.push({ x: dates, y: likes, mode: 'lines+markers', name: `${k.keyword} - Likes`, type: 'scatter' });
+    commentsTraces.push({ x: dates, y: comments, mode: 'lines+markers', name: `${k.keyword} - Comments`, type: 'scatter' });
   });
 
-const iso2ToIso3 = {
-      US: "USA", IN: "IND", GB: "GBR", CA: "CAN", AU: "AUS",
-      DE: "DEU", FR: "FRA", BR: "BRA", RU: "RUS", JP: "JPN",
-      KR: "KOR", IT: "ITA", ES: "ESP", MX: "MEX", ZA: "ZAF",
-      NG: "NGA", SA: "SAU", AE: "ARE", SG: "SGP", ID: "IDN"
-    };
 
-    // ✅ Aggregate all keyword country stats
-    let countryStats = [];
-    keywords.forEach(k => { if (k.countryStats) countryStats = countryStats.concat(k.countryStats); });
+  const keywordNames = keywordsData.map(k => k.keyword);
+  const videoCounts = keywordsData.map(k => k.totalVideoCount);
+  const viewsCounts = keywordsData.map(k => k.totalViews);
+  const likesCounts = keywordsData.map(k => k.totalLikes);
+  const commentsCounts = keywordsData.map(k => k.totalComments);
 
-    const aggregated = {};
-    countryStats.forEach(c => { aggregated[c.country] = (aggregated[c.country] || 0) + c.videoCount; });
+  const traces = [
+    { x: keywordNames, y: videoCounts, name: 'Videos', type: 'bar' },
+    { x: keywordNames, y: viewsCounts, name: 'Views', type: 'bar' },
+    { x: keywordNames, y: likesCounts, name: 'Likes', type: 'bar' },
+    { x: keywordNames, y: commentsCounts, name: 'Comments', type: 'bar' }
+  ];
 
-    const finalStats = Object.entries(aggregated).map(([country, videoCount]) => ({
-      country: iso2ToIso3[country] || country,
-      videoCount
-    }));
+  const layout = {
+    title: 'YouTube Metrics per Keyword (Total)',
+    barmode: 'group',
+    paper_bgcolor: '#0f0f0f',
+    plot_bgcolor: '#0f0f0f',
+    font: { color: '#fff' },
+    xaxis: { title: 'Keyword' },
+    yaxis: { title: 'Count' }
+  };
 
-    console.log("Country stats for map:", finalStats);
-
-    const mapData = [{
-  type: 'choropleth',
-  locationmode: 'ISO-3',
-  locations: finalStats.map(c => c.country),
-  z: finalStats.map(c => c.videoCount),
-  text: finalStats.map(c => `${c.country}: ${c.videoCount} videos`),
-  colorscale: [
-    [0, 'rgb(198, 219, 239)'],   // very light blue for low values
-    [0.5, 'rgb(107, 174, 214)'], // medium blue
-    [1, 'rgb(8, 48, 107)']       // dark navy blue for highest
-  ],
-  reversescale: false,
-  marker: { line: { color: 'rgb(180,180,180)', width: 0.5 } }
-}];
-
-const mapLayout = {
-  title: '🌍 Keyword Popularity by Country (Video Count)',
-  geo: {
-    showframe: false,
-    showcoastlines: false,
-    projection: { type: 'mercator' }
-  },
-  width: 1400,   // ✅ increase width
-  height: 800,   // ✅ increase height
-  paper_bgcolor: '#0f0f0f',
-  plot_bgcolor: '#0f0f0f',
-  font: { color: '#fff' }
-};
-
-P
-
-
-  // Chart 1: Video Count
+  Plotly.newPlot('barChart', traces, layout);
+  // Video Count
   Plotly.newPlot('videosChart', videoTraces, {
-    title: '📊 Video Count Over Time',
+    title: '🎥 Video Count Over Time',
     xaxis: { title: 'Date' },
     yaxis: { title: 'Video Count' },
     paper_bgcolor: '#0f0f0f',
@@ -420,7 +358,7 @@ P
     font: { color: '#fff' }
   });
 
-  // Chart 2: Views
+  // Views
   Plotly.newPlot('viewsChart', viewsTraces, {
     title: '👀 Views Over Time',
     xaxis: { title: 'Date' },
@@ -430,7 +368,7 @@ P
     font: { color: '#fff' }
   });
 
-  // Chart 3: Likes + Comments
+  // Likes & Comments
   Plotly.newPlot('likesCommentsChart', [...likesTraces, ...commentsTraces], {
     title: '👍 Likes & 💬 Comments Over Time',
     xaxis: { title: 'Date' },
@@ -440,7 +378,53 @@ P
     font: { color: '#fff' }
   });
 
-   Plotly.newPlot('mapChart', mapData, mapLayout);
+   
+  // Map (using ISO-2 codes directly)
+   const countryStats = [];
+  keywords.forEach(k => {
+    console.log(`Keyword: ${k.keyword}`);
+    console.log("Country stats:", k.countryStats);
+    if (k.countryStats) countryStats.push(...k.countryStats);
+  });
+
+  // Sum videoCount for countries across all keywords
+  const aggregated = {};
+  countryStats.forEach(c => {
+    aggregated[c.country] = (aggregated[c.country] || 0) + c.videoCount;
+  });
+
+  // ISO-2 to ISO-3 mapping (Plotly requires ISO-3 codes)
+  const iso2ToIso3 = {
+    US: "USA", IN: "IND", GB: "GBR", CA: "CAN", AU: "AUS"
+  };
+
+  const finalStats = Object.entries(aggregated).map(([country, videoCount]) => ({
+    country: iso2ToIso3[country] || country,
+    videoCount
+  }));
+
+  console.log("Country stats for map:", finalStats);
+
+  const mapData = [{
+    type: 'choropleth',
+    locationmode: 'ISO-3',
+    locations: finalStats.map(c => c.country),
+    z: finalStats.map(c => c.videoCount),
+    text: finalStats.map(c => `${c.country}: ${c.videoCount} videos`),
+    colorscale: 'Blues',
+    reversescale: false,
+    marker: { line: { color: 'rgb(180,180,180)', width: 0.5 } }
+  }];
+
+  const mapLayout = {
+    title: '🌍 YouTube Trending Videos by Country',
+    geo: { showframe: false, showcoastlines: false, projection: { type: 'mercator' } },
+    paper_bgcolor: '#0f0f0f',
+    plot_bgcolor: '#0f0f0f',
+    font: { color: '#fff' }
+  };
+
+  Plotly.newPlot('mapChart', mapData, mapLayout);
 
 </script>
 
