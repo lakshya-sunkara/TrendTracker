@@ -324,11 +324,11 @@
   });
 
 
-  const keywordNames = keywordsData.map(k => k.keyword);
-  const videoCounts = keywordsData.map(k => k.totalVideoCount);
-  const viewsCounts = keywordsData.map(k => k.totalViews);
-  const likesCounts = keywordsData.map(k => k.totalLikes);
-  const commentsCounts = keywordsData.map(k => k.totalComments);
+  const keywordNames = keywords.map(k => k.keyword);
+  const videoCounts = keywords.map(k => k.totalVideoCount);
+  const viewsCounts = keywords.map(k => k.totalViews);
+  const likesCounts = keywords.map(k => k.totalLikes);
+  const commentsCounts = keywords.map(k => k.totalComments);
 
   const traces = [
     { x: keywordNames, y: videoCounts, name: 'Videos', type: 'bar' },
